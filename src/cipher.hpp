@@ -63,17 +63,33 @@ public:
 		inter = intm;
 		hex = hx;
 		debug = dbg;
+		from_std = false;
+		to_std = false;
 
 		// Get input (From file or from stdin)
 		if (input_path == "-")
 		{
+			if (debug) std::cout << "--- DEBUG: Setting INPUT to STDIN ---" << std::endl;
 			std::cout << "Enter text to cipher:" << std::endl << "> ";
 			std::getline(std::cin, str_input);
-
+			from_std = true;
 		}
 		else
 		{
+			if (debug) std::cout << "--- DEBUG: Setting INPUT to file: " << input_path << " ---" << std::endl;
 			input.open(input_path.c_str(), std::ifstream::in | std::ifstream::binary);
+		}
+
+		// Set output
+		if (output_path == "-")
+		{
+			if (debug) std::cout << "--- DEBUG: Setting OUTPUT to STDOUT ---" << std::endl;
+			to_std = true;
+		}
+		else
+		{
+			if (debug) std::cout << "--- DEBUG: Setting OUTPUT to file: " << output_path << " ---" << std::endl;
+			output.open(output_path.c_str(), std::ifstream::out | std::ifstream::binary);
 		}
 
 		// Encrypt / Decrypt the input
