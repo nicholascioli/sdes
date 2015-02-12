@@ -57,7 +57,20 @@ public:
 
 		// Get the round keys
 		for (unsigned int i = 0 ; i < pp.get_params().rnds; ++i)
-			round_keys.push_back(gen_round(pp.get_params().rnds));
+			round_keys.push_back(gen_round(i));
+
+		if (debug)
+		{
+			std::cout << "--- DEBUG: Generated keys ---" << std::endl;
+			for (unsigned int i = 0; i < round_keys.size(); ++i)
+			{
+				for (unsigned int j = 0; j < round_keys[i].size(); ++j)
+					std::cout << round_keys[i][j];
+				std::cout << std::endl;
+			}
+
+			std::cout << "--- DEBUG: End Generated Keys ---" << std::endl;
+		}
 	}
 
 	std::vector<unsigned int> gen_round(unsigned int m_round)
