@@ -8,12 +8,12 @@ class keygen
 {
 private:
 
-	std::string str_key;
-	std::vector<unsigned int> key;
-	unsigned int l_key;
+	std::string str_key;				// String representation of key
+	std::vector<unsigned int> key;		// Master Key
+	std::vector<unsigned int> ekey;		// Effective key
+	unsigned int l_key;					// Length of key
 
-	std::vector<unsigned int> round1;
-	std::vector<unsigned int> round2;
+	std::vector<std::vector<unsigned int>> round_keys;
 	
 	pparser pp;
 	converter cnv;
@@ -56,23 +56,25 @@ public:
 		if (debug) std::cout << "--- DEBUG: Got key of \'" << cnv.h2a(key) << "\'" << std::endl;
 
 		// Get the round keys
-		round1 = gen_round(0);
-		round2 = gen_round(1);
+		for (unsigned int i = 0 ; i < pp.get_params().rnds; ++i)
+			round_keys.push_back(gen_round(pp.get_params().rnds));
 	}
 
-	std::vector<unsigned int> gen_round(unsigned int round)
+	std::vector<unsigned int> gen_round(unsigned int m_round)
 	{
 		// Get the appropriate permutation & round shifts
 		std::vector<int> shifts = pp.get_params().l_rot;
-		std::vector<unsigned int> perm = pp.get_params().pc2;
-		std::vector<unsigned int> shifted(key);
+		std::vector<unsigned int> perm = pp.get_params().pc[1];
 
-		if (round == 0)
-			perm = pp.get_params().pc1;
+		if (m_round == 0)
+			for (unsigned int i = 0; i < pp.get_params().pc[0].size(); ++i)
+				ekey.push_back(key[pp.get_params().pc[0][i]-1]);
+
+		std::vector<unsigned int> shifted(ekey);
 
 		// Perform the shifts
 		unsigned int temp;
-		for (unsigned int i = 0; i < (abs(shifts[round])); ++i)
+		for (unsigned int i = 0; i < (abs(shifts[m_round])); ++i)
 		{
 			unsigned int l_begin = shifted[0];
 			unsigned int r_begin = shifted[shifted.size()/2];
@@ -103,7 +105,7 @@ public:
 
 		if (debug) std::cout << "--- DEBUG: Generated shifted key of: " << cnv.h2a(shifted) << " ---" << std::endl;
 
-		// Generate the round key by permutating through PC1 on the shifted values
+		// Generate the round key by permutating through PC2 on the shifted values
 		std::vector<unsigned int> rnd_key;
 
 		for (unsigned int i = 0; i < perm.size(); ++i)
@@ -124,10 +126,12 @@ public:
 
 	std::vector<unsigned int> get_rnd_key(unsigned int rnd) const
 	{
-		if (rnd == 0)
-			return round1;
-		else 
-			return round2;
+		return round_keys[rnd];
+	}
+
+	std::vector<std::vector<unsigned int>> get_rnd_keys() const
+	{
+		return round_keys;
 	}
 
 	std::string get_str_key() const
@@ -140,8 +144,8 @@ public:
 		this->str_key = other.get_str_key();
 		this->key = other.get_key();
 		this->l_key = this->key.size();
-		this->round1 = other.get_rnd_key(0);
-		this->round2 = other.get_rnd_key(1);
+
+		this->round_keys = other.get_rnd_keys();
 	}
 
 	keygen() {}

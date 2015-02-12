@@ -33,8 +33,7 @@ private:
 		{
 			std::cout << "Printing to stdout:" << std::endl;
 			for (unsigned int i = 0; i < out.size(); ++i)
-				for (unsigned int j = 0; j < out[i].size(); ++j)
-					std::cout << out[i][j];
+				std::cout << out[i];
 
 			std::cout << std::endl;
 		}
@@ -43,8 +42,7 @@ private:
 			std::cout << "Printing to file." << std::endl;
 
 			for (unsigned int i = 0; i < out.size(); ++i)
-				for (unsigned int j = 0; j < out[i].size(); ++j)
-					output << out[i][j];
+				output << out[i];
 
 			output << std::endl;
 		}
@@ -67,54 +65,60 @@ private:
 		return result;
 	}
 
-	// SBox function
+	// SBox & PBox function
 	template <typename T>
-	std::vector<T> do_sbox(std::vector<T> in)
+	std::vector<T> boxes(std::vector<T> in)
 	{
 		std::vector<T> result;
-		std::vector<std::vector<T>> split;
-		std::vector<std::vector<T>> all_rows;
-		std::vector<std::vector<T>> all_cols;
 		std::vector<std::vector<T>> sbox = pp.get_params().sbox;
 		unsigned int number_sbox = pp.get_params().n_sbox;
 		unsigned int rnd_key_size = pp.get_params().s_rkey;
+		unsigned int block_size = pp.get_params().s_blk;
 		std::vector<T> select_row = pp.get_params().row_b;
 		std::vector<T> select_col = pp.get_params().col_b;
 		std::vector<T> rows;
 		std::vector<T> cols;
 
-		// Split up the sbox input
-		for (unsigned int i = 0; i < number_sbox; ++i)
+		for (unsigned int i = 0; i < in.size(); ++i)
+			std::cout << in[i] << " ~ ";
+		std::cout << std::endl;
+
+		// Get the selected rows
+		for (unsigned int j = 0; j < select_row.size(); ++j)
 		{
-			// Get the selected rows
-			for (unsigned int j = 0; j < select_row.size(); ++j)
-			{
-				rows.push_back(in[select_row[j]-1]);
-				cols.push_back(in[select_col[j]-1]);
-			}
+			rows.push_back(in[select_row[j]-1]);
+			cols.push_back(in[select_col[j]-1]);
 
-			all_rows.push_back(rows);
-			all_cols.push_back(cols);
-
-			// Clean up
-			rows.clear();
-			cols.clear();
+			std::cout << rows[j] << " # ";
 		}
+		std::cout << std::endl;
+
+		/*
 
 		// Get decimal equivalent of row and pass that to result
-		for (unsigned int i = 0; i < all_rows.size(); ++i)
+		for (unsigned int i = 0; i < number_sbox; ++i)
 		{
-			result.push_back(sbox[conv.b2i(all_rows[i])][conv.b2i(all_cols[i])]);
+			if (debug) std::cout << "--- DEBUG: " << conv.b2i(rows) << " | " << conv.b2i(cols) << " ---" << std::endl;
+			result.insert(result.end(), 
+				conv.i2b(sbox[(conv.b2i(rows)) 
+					+ (i * ((rnd_key_size / number_sbox) - (block_size / (2 * number_sbox))))]
+					[(conv.b2i(cols))], number_sbox).begin(),
+				conv.i2b(sbox[(conv.b2i(rows)) 
+					+ (i * ((rnd_key_size / number_sbox) - (block_size / (2 * number_sbox))))]
+					[(conv.b2i(cols))], number_sbox).end());
 		}
+
+
 
 		if (debug)
 		{ 
-			std::cout << "--- DEBUG: do_sbox shows ";
+			std::cout << "--- DEBUG: boxes() shows ";
 			for (unsigned int i = 0; i < result.size(); ++i)
 				std::cout << result[i];
-			std::cout << std::endl;
+			std::cout << " ---" << std::endl;
 		}
 
+		*/
 		return result;
 	}
 
@@ -123,13 +127,18 @@ private:
 	std::vector<T> mangler(unsigned int rnd, std::vector<T> right)
 	{
 		std::vector<T> result;
+		std::vector<T> box;
 		std::vector<unsigned int> rnd_key = kg.get_rnd_key(rnd);
 		std::vector<T> permutated = perm<T>(right, pp.get_params().e_perm);
 
+		// XOR the permutated right side with the round key
 		for (unsigned int i = 0; i < permutated.size(); ++i)
 		{
-			result.push_back(permutated[i] ^ rnd_key[i]);
+			box.push_back(permutated[i] ^ rnd_key[i]);
 		}
+
+		// Run it through both the sbox and pbox
+		result = boxes(box);
 
 		return result;
 	}
@@ -139,8 +148,6 @@ private:
 	std::vector<T> stage3(unsigned int rnd, std::vector<T> left, std::vector<T> right)
 	{
 		std::vector<T> result;
-		std::vector<T> sbox;
-		std::vector<T> pbox;
 		
 		// First mangle the right side
 		std::vector<T> mangled = mangler<T>(rnd, right);
@@ -148,14 +155,16 @@ private:
 		// Then XOR the right and left sides together to get the input for sboxes
 		for (unsigned int i = 0; i < left.size(); ++i)
 		{
-			sbox.push_back(left[i] ^ right[i]);
+			result.push_back(left[i] ^ mangled[i]);
 		}
 
-		// Do sbox things
-		pbox = do_sbox<unsigned int>(sbox);
-
-		if (debug) std::cout << "--- DEBUG: Stage3 completed with ";
-		if (debug) std::cout << " ---" << std::endl;
+		if (debug) 
+		{
+			std::cout << "--- DEBUG: Stage 3 completed with ";
+			for (unsigned int i = 0; i < result.size(); ++i)
+				std::cout << result[i];
+			std::cout << " ---" << std::endl;
+		}
 
 		return result;
 	}
@@ -176,8 +185,7 @@ private:
 		
 		left = stage3<T>(rnd, left, right);
 
-		// Right side gets L XOR mangler(K, R)
-		result.insert(result.end(), left.begin(), left.end());	
+		result.insert(result.end(), left.begin(), left.end());				// Right side gets L XOR mangler(K, R)
 
 		if (debug)
 		{
@@ -193,84 +201,51 @@ private:
 	// Function to encrypt 
 	void en()
 	{
-		std::vector<std::vector<unsigned int>> result;
-		std::vector<std::vector<unsigned int>> round1;
-		std::vector<std::vector<unsigned int>> round2;
+		unsigned int rnds = pp.get_params().rnds;
+		std::vector<std::vector<unsigned int>> rounds;
 		std::vector<std::vector<unsigned int>> init_perm;
+		std::vector<std::vector<unsigned int>> vec;
 
 		// Encrypt from the stdin
 		if (from_std)
 		{
-			std::vector<std::vector<unsigned int>> vec = conv.s2bv(str_input, pp.get_params().s_blk);
-			
-			if (debug) std::cout << "\n--- DEBUG: Starting Round 1 ---" << std::endl;
-			if (debug) std::cout << "--- DEBUG: Converted \'" << str_input 
-				<< "\' to binary ---" << std::endl;
-
-			// Round 1
-			for (unsigned int i = 0; i < vec.size(); ++i)
-			{
-				// Initial Permutation
-				init_perm.push_back(perm<unsigned int>(vec[i], pp.get_params().i_perm));
-
-				// Do round 1
-				round1.push_back(stage2<unsigned int>(init_perm[i], 0));
-			}
-			if (debug) std::cout << "--- DEBUG: End of Round 1 ---\n" << std::endl;
-
-			// Round 2
-			if (debug) std::cout << "--- DEBUG: Starting Round 2 ---" << round1[0].size() << std::endl;
-			for (unsigned int i = 0; i < round1.size(); ++i)
-			{
-				// Do round 2
-				round2.push_back(stage2<unsigned int>(round1[i], 1));
-			}
-			if (debug) std::cout << "--- DEBUG: End of Round 2 ---\n" << std::endl;
-
-
-			if (debug) std::cout << "--- DEBUG: Finished encrypting " << str_input << " ---" << std::endl;
-
-			print(round2);
+			// Convert string to binary equivalent
+			vec = conv.s2bv(str_input, pp.get_params().s_blk);
 		}
 		// Encrypt from a file
 		else
 		{
-			// Get the stuff
+			// Get the input
 			std::string in = "";
 			char c;
 			while (input.get(c))
 				in += c;
 
 			std::vector<std::vector<unsigned int>> vec = conv.s2bv(in, pp.get_params().s_blk);
-			
-			if (debug) std::cout << "\n--- DEBUG: Starting Round 1 ---" << std::endl;
-			if (debug) std::cout << "--- DEBUG: Converted input to binary ---" << std::endl;
+		}
 
-			// Round 1
+		for (unsigned int r = 0; r < rnds; ++r)
+		{
+			if (debug) std::cout << "\n--- DEBUG: Starting Round " << r << " ---" << std::endl;
+
 			for (unsigned int i = 0; i < vec.size(); ++i)
 			{
-				// Initial Permutation
-				init_perm.push_back(perm<unsigned int>(vec[i], pp.get_params().i_perm));
+				// Initial Permutation on first round
+				if (rnds == 0)
+					init_perm.push_back(perm<unsigned int>(vec[i], pp.get_params().i_perm));
 
-				// Do round 1
-				round1.push_back(stage2<unsigned int>(init_perm[i], 0));
+				// Do round
+				rounds.push_back(stage2<unsigned int>(init_perm[i], r));
 			}
-			if (debug) std::cout << "--- DEBUG: End of Round 1 ---\n" << std::endl;
 
-			// Round 2
-			if (debug) std::cout << "--- DEBUG: Starting Round 2 ---" << round1[0].size() << std::endl;
-			for (unsigned int i = 0; i < round1.size(); ++i)
-			{
-				// Do round 2
-				round2.push_back(stage2<unsigned int>(round1[i], 1));
-			}
-			if (debug) std::cout << "--- DEBUG: End of Round 2 ---\n" << std::endl;
-
-
-			if (debug) std::cout << "--- DEBUG: Finished encrypting " << str_input << " ---" << std::endl;
-
-			print(round2);
+			if (debug) std::cout << "--- DEBUG: End of Round " << r << " ---\n" << std::endl;
 		}
+
+		if (debug) std::cout << "--- DEBUG: Finished encrypting " << str_input << " ---" << std::endl;
+
+		// Permutate the scrambled result with the inverse initial permutation
+		// & print out the result;
+		print<unsigned int>(perm<unsigned int>(rounds.back(), pp.get_params().ii_perm));
 	}
 
 	// Function to decrypt

@@ -14,8 +14,7 @@ public:
 		unsigned int s_rkey;							// Round key size
 		unsigned int rnds;								// Number of rounds
 
-		std::vector<unsigned int> pc1;					// PC1 permutations
-		std::vector<unsigned int> pc2;					// PC2 permutations
+		std::vector<std::vector<unsigned int>> pc;		// PC permutations
 		std::vector<int> l_rot;							// Left rotation schedule
 		std::vector<unsigned int> i_perm;				// Initial permutation
 		std::vector<unsigned int> ii_perm;				// Inverse of initial permutation
@@ -140,11 +139,11 @@ private:
 						break;
 					case 5:		// PC1
 						if (debug) std::cout << "--- DEBUG: Setting PC1 to " << new_param << std::endl;
-						p.pc1 = str2vec<unsigned int>(new_param);
+						p.pc.push_back(str2vec<unsigned int>(new_param));
 						break;
 					case 6:		// PC2
 						if (debug) std::cout << "--- DEBUG: Setting PC2 to " << new_param << std::endl;
-						p.pc2 = str2vec<unsigned int>(new_param);
+						p.pc.push_back(str2vec<unsigned int>(new_param));
 						break;
 					case 7:		// Left rotation
 						if (debug) std::cout << "--- DEBUG: Setting LEFT ROTATION to " << new_param << std::endl;
@@ -282,8 +281,8 @@ public:
 			<< "\nEffective Key Size:\t"		<< p.s_ekey
 			<< "\nRound Key Size:\t\t"			<< p.s_rkey
 			<< "\nNumber of Rounds:\t"			<< p.rnds
-			<< "\nPC-1:\t\t\t"					<< vec2str<unsigned int>(p.pc1)
-			<< "\nPC-2:\t\t\t"					<< vec2str<unsigned int>(p.pc2)
+			<< "\nPC-1:\t\t\t"					<< vec2str<unsigned int>(p.pc[0])
+			<< "\nPC-2:\t\t\t"					<< vec2str<unsigned int>(p.pc[1])
 			<< "\nLeft Rotation Schedule:\t"	<< vec2str<int>(p.l_rot)
 			<< "\nInitial Permutation:\t"		<< vec2str<unsigned int>(p.i_perm)
 			<< "\nInverse Permutation:\t"		<< vec2str<unsigned int>(p.ii_perm)
@@ -374,16 +373,16 @@ public:
 			(14 + (p.rnds * (2 << ((p.s_rkey / p.n_sbox) - (p.s_blk / (2 * p.n_sbox))) - 1))), n_params);
 		
 		// Check that PC1 has s_ekey entries
-		equal<unsigned int>(result, "PC1", p.s_ekey, p.pc1.size());
+		equal<unsigned int>(result, "PC1", p.s_ekey, p.pc[0].size());
 
 		// Check that each entry in PC1 is not greater than the key size
-		below<unsigned int>(result, "PC1", p.s_key, p.pc1);
+		below<unsigned int>(result, "PC1", p.s_key, p.pc[0]);
 
 		// Check that PC2 has s_rkey entries
-		equal<unsigned int>(result, "PC2", p.s_rkey, p.pc2.size());
+		equal<unsigned int>(result, "PC2", p.s_rkey, p.pc[1].size());
 
 		// Check that each entry in PC2 is not greater than the effective key size
-		below<unsigned int>(result, "PC2", p.s_ekey, p.pc2);
+		below<unsigned int>(result, "PC2", p.s_ekey, p.pc[1]);
 
 		// Check that Left rotations has rnds entries
 		equal<int>(result, "LEFT ROTATIONS", p.rnds, p.l_rot.size());

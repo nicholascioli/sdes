@@ -19,10 +19,14 @@ public:
 		unsigned int result = 0;
 		unsigned int temp;
 
-		for (int i = 0; i < conv.size(); ++i)
+		for (int i = 0, j = conv.size() - 1; i < conv.size(); ++i, --j)
 		{
-			temp = 2 << (i - 1);
-			result += temp * conv[i];
+			if (i)
+				temp = 2 << (i - 1);
+			else
+				temp = 1;
+
+			result += temp * conv[j];
 		}
 
 		return result;
