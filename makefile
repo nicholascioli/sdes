@@ -6,7 +6,7 @@ all: main
 debug: clean
 	$(CXX) -o debug -g ./src/main.cpp
 
-main: clean
+main: 
 	$(CXX) -o main ./src/main.cpp
 
 clean:
