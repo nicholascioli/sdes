@@ -13,10 +13,25 @@ public:
 
 	converter() {}
 
-	// Converts from unsigned int to binary equivalent in a vector
-	std::vector<unsigned short> i2b(unsigned int conv, unsigned int vector_size)
+	// Converts from binary to integer
+	unsigned int b2i(std::vector<unsigned int> conv)
 	{
-		std::vector<unsigned short> result;
+		unsigned int result = 0;
+		unsigned int temp;
+
+		for (int i = 0; i < conv.size(); ++i)
+		{
+			temp = 2 << (i - 1);
+			result += temp * conv[i];
+		}
+
+		return result;
+	}
+
+	// Converts from unsigned int to binary equivalent in a vector
+	std::vector<unsigned int> i2b(unsigned int conv, unsigned int vector_size)
+	{
+		std::vector<unsigned int> result;
 		unsigned int n = conv;
 		unsigned int x = conv;
 		int a;
@@ -56,10 +71,11 @@ public:
 		return result;
 	}
 
-	// Converts from ascii representation of hex to a vector of ints
+	// Converts from ascii representation of hex to a vector of binary ints
 	std::vector<unsigned int> a2v(std::string conv)
 	{
 		std::vector<unsigned int> result;
+		std::vector<unsigned int> temp_v;
 		for (unsigned int i = 0; i < conv.size(); ++i)
 		{
 			if (isdigit(conv[i]) || conv[i] == 'A' || conv[i] == 'B' 
@@ -67,9 +83,15 @@ public:
 			{
 				int temp = conv[i] - '0';
 				if (temp > 10)
-					result.push_back((10 + conv[i] - 'A'));
+				{
+					temp_v = i2b(10 + conv[i] - 'A', 4);
+				}
 				else
-					result.push_back(temp);
+				{
+					temp_v = i2b(temp, 4);
+				}
+
+				result.insert(result.end(), temp_v.begin(), temp_v.end());
 			}
 		}
 
@@ -93,9 +115,9 @@ public:
 	}
 
 	// Converts from string to a binary vector of block_size size
-	std::vector<std::vector<unsigned short>> s2bv(std::string conv, unsigned int block_size)
+	std::vector<std::vector<unsigned int>> s2bv(std::string conv, unsigned int block_size)
 	{
-		std::vector<std::vector<unsigned short>> result;
+		std::vector<std::vector<unsigned int>> result;
 
 		// First get integer representations of the individual characters
 		std::vector<unsigned int> temp = s2v(conv);

@@ -166,11 +166,11 @@ private:
 						if (debug) std::cout << "--- DEBUG: Setting NUMBER OF S-BOXES to " << new_param << std::endl;
 						p.n_sbox = atoi(new_param.c_str());
 						break;
-					case 12:
+					case 12:	// Row selection bits
 						if (debug) std::cout << "--- DEBUG: Setting ROW SELECTION BITS to " << new_param << std::endl;
 						p.row_b = str2vec<unsigned int>(new_param);
 						break;
-					case 13:
+					case 13:	// Column selection bits
 						if (debug) std::cout << "--- DEBUG: Setting COLUMN SELECTION BITS to " << new_param << std::endl;
 						p.col_b = str2vec<unsigned int>(new_param);
 						break;
