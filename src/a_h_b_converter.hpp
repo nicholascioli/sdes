@@ -64,12 +64,12 @@ public:
 	}
 
 	// Converts from ascii to a vector of ints
-	std::vector<unsigned int> s2v(std::string conv)
+	std::vector<unsigned int> s2v(std::string conv, int sub=0)
 	{
 		std::vector<unsigned int> result;
 		for (unsigned int i = 0; i < conv.size(); ++i)
 		{
-			result.push_back(conv[i] - 0);
+			result.push_back(conv[i] - sub);
 		}
 
 		return result;
