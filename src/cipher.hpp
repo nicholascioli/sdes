@@ -65,10 +65,27 @@ private:
 		return result;
 	}
 
+	// Return a vector containing the values selected from in through sel
+	template<typename T>
+	std::vector<T> select(std::vector<T> in, std::vector<T> sel)
+	{
+		if (debug) std::cout << "--- DEBUG: Starting select ---" << std::endl;
+		std::vector<T> result;
+
+		for (unsigned int i = 0; i < sel.size(); ++i)
+		{
+			result.push_back(in[sel[i]-1]);
+		}
+
+		if (debug) std::cout << "--- DEBUG: End of select ---" << std::endl;
+		return result;
+	}
+
 	// SBox & PBox function
 	template <typename T>
 	std::vector<T> boxes(std::vector<T> in)
 	{
+		if (debug) std::cout << "--- DEBUG: Starting boxes ---" << std::endl;
 		std::vector<T> result;
 		std::vector<std::vector<T>> sbox = pp.get_params().sbox;
 		unsigned int number_sbox = pp.get_params().n_sbox;
@@ -76,23 +93,35 @@ private:
 		unsigned int block_size = pp.get_params().s_blk;
 		std::vector<T> select_row = pp.get_params().row_b;
 		std::vector<T> select_col = pp.get_params().col_b;
-		std::vector<T> rows;
-		std::vector<T> cols;
+		std::vector<std::vector<T>> rows;
+		std::vector<std::vector<T>> cols;
 
 		for (unsigned int i = 0; i < in.size(); ++i)
 			std::cout << in[i] << " ~ ";
 		std::cout << std::endl;
 
-		// Get the selected rows
-		for (unsigned int j = 0; j < select_row.size(); ++j)
+		// Split the entries into number_of_round equal bits
+		std::string temp;
+		for (unsigned int i = 0; i < number_sbox; ++i)
 		{
-			rows.push_back(in[select_row[j]-1]);
-			cols.push_back(in[select_col[j]-1]);
+			temp = "";
+			for (unsigned int j = 0; j < (rnd_key_size / number_sbox); ++j)
+			{
+				temp += std::to_string(in[i*(rnd_key_size / number_sbox) + j]);
+			}
 
-			std::cout << rows[j] << " # ";
+			// Get the selected rows / columns from the input
+			rows.push_back(select<unsigned int>(conv.s2v(temp, '0'), select_row));
+			cols.push_back(select<unsigned int>(conv.s2v(temp, '0'), select_col));
 		}
-		std::cout << std::endl;
 
+		if (debug) std::cout << "--- DEBUG: Gathered the following rows / columns ---" << std::endl;
+		for (unsigned int i = 0; i < rows.size(); ++i)
+		{
+			for (unsigned int j = 0; j < rows[i].size(); ++j)
+				std::cout << rows[i][j] << "|" << cols[i][j];
+			std::cout << std::endl;
+		}
 		/*
 
 		// Get decimal equivalent of row and pass that to result
@@ -107,8 +136,6 @@ private:
 					+ (i * ((rnd_key_size / number_sbox) - (block_size / (2 * number_sbox))))]
 					[(conv.b2i(cols))], number_sbox).end());
 		}
-
-
 
 		if (debug)
 		{ 
@@ -126,16 +153,20 @@ private:
 	template <typename T> 
 	std::vector<T> mangler(unsigned int rnd, std::vector<T> right)
 	{
+		if (debug) std::cout << "--- DEBUG: Starting Mangler ---" << std::endl;
 		std::vector<T> result;
 		std::vector<T> box;
 		std::vector<unsigned int> rnd_key = kg.get_rnd_key(rnd);
 		std::vector<T> permutated = perm<T>(right, pp.get_params().e_perm);
 
 		// XOR the permutated right side with the round key
+		if (debug) std::cout << "--- DEBUG: Mangled output: ";
 		for (unsigned int i = 0; i < permutated.size(); ++i)
 		{
 			box.push_back(permutated[i] ^ rnd_key[i]);
+			if (debug) std::cout << box[i];
 		}
+		if (debug) std::cout << " ---" << std::endl;
 
 		// Run it through both the sbox and pbox
 		result = boxes(box);
@@ -147,6 +178,7 @@ private:
 	template <typename T>
 	std::vector<T> stage3(unsigned int rnd, std::vector<T> left, std::vector<T> right)
 	{
+		if (debug) std::cout << "--- DEBUG: Starting Stage 3 ---" << std::endl;
 		std::vector<T> result;
 		
 		// First mangle the right side
@@ -173,6 +205,7 @@ private:
 	template <typename T>
 	std::vector<T> stage2(std::vector<T> vec, unsigned int rnd)
 	{
+		if (debug) std::cout << "--- DEBUG: Starting Stage 2 ---" << std::endl;
 		unsigned int block_size = pp.get_params().s_blk;
 		std::vector<T> result;
 
@@ -210,6 +243,7 @@ private:
 		if (from_std)
 		{
 			// Convert string to binary equivalent
+			if (debug) std::cout << "--- DEBUG: Getting binary equivalent of \'" << str_input << "\' ---" << std::endl;
 			vec = conv.s2bv(str_input, pp.get_params().s_blk);
 		}
 		// Encrypt from a file
@@ -231,8 +265,11 @@ private:
 			for (unsigned int i = 0; i < vec.size(); ++i)
 			{
 				// Initial Permutation on first round
-				if (rnds == 0)
+				if (r == 0)
+				{
+					if (debug) std::cout << "--- DEBUG: Permutating initially ---" << std::endl;
 					init_perm.push_back(perm<unsigned int>(vec[i], pp.get_params().i_perm));
+				}
 
 				// Do round
 				rounds.push_back(stage2<unsigned int>(init_perm[i], r));
