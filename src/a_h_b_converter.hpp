@@ -118,13 +118,26 @@ public:
 		return result;
 	}
 
+	// Converts from 2dvector of hex numbers to ascii representation
+	std::string h2a(std::vector<std::vector<unsigned int>> conv)
+	{
+		std::string result = "";
+
+		for (unsigned int i = 0; i < conv.size(); ++i)
+		{
+			result += h2a(conv[i]);
+		}
+
+		return result;
+	}
+
 	// Converts from string to a binary vector of block_size size
 	std::vector<std::vector<unsigned int>> s2bv(std::string conv, unsigned int block_size)
 	{
 		std::vector<std::vector<unsigned int>> result;
 
 		// First get integer representations of the individual characters
-		std::vector<unsigned int> temp = s2v(conv);
+		std::vector<unsigned int> temp = s2v(conv, '0');
 
 		// Then get each individual number's binary equivalent
 		for (unsigned int i = 0; i < temp.size(); ++i)
@@ -134,6 +147,24 @@ public:
 
 		return result;
 	}
+
+	// Converts from string representation of binary to a binary vector of block_size size
+	std::vector<std::vector<unsigned int>> bs2bv(std::string conv, unsigned int block_size)
+	{
+		std::vector<std::vector<unsigned int>> result;
+		std::vector<unsigned int> temp;
+		std::string block;
+
+		for (unsigned int i = 0; i < conv.size(); i += block_size)
+		{
+			block = conv.substr(i, block_size);
+			temp = s2v(block, '0');
+			result.push_back(temp);
+		}
+
+		return result;
+	}
+
 };
 
 #endif // __H_A_H_B_CONVERTER_H__

@@ -147,6 +147,16 @@ public:
 		return round_keys;
 	}
 
+	std::vector<std::vector<unsigned int>> get_rnd_keys_reverse() const
+	{
+		std::vector<std::vector<unsigned int>> result;
+		
+		for (unsigned int i = 0; i < round_keys.size(); ++i)
+			result.push_back(round_keys[round_keys.size() - i - 1]);
+
+		return result;
+	}
+
 	std::string get_str_key() const
 	{
 		return str_key;
