@@ -27,7 +27,7 @@ private:
 
 	// Prints to output
 	template <typename T>
-	void print(std::vector<std::vector<T>> out)
+	void print2d(std::vector<std::vector<T>> out)
 	{
 		if (to_std)
 		{
@@ -45,6 +45,28 @@ private:
 			for (unsigned int i = 0; i < out.size(); ++i)
 				for (unsigned int j = 0; j < out[i].size(); ++j)
 					output.write((char*)&(out[i][j]), sizeof(short));
+
+			output << '\0';
+		}
+	}
+
+	template <typename T>
+	void print(std::vector<T> out)
+	{
+		if (to_std)
+		{
+			std::cout << "Printing to stdout:" << std::endl;
+			for (unsigned int i = 0; i < out.size(); ++i)
+				std::cout << out[i];
+
+			std::cout << std::endl;
+		}
+		else
+		{
+			std::cout << "Printing to file." << std::endl;
+
+			for (unsigned int i = 0; i < out.size(); ++i)
+				output.write((char*)&(out[i]), sizeof(short));
 
 			output << '\0';
 		}
@@ -267,7 +289,7 @@ private:
 	}
 
 	// Cipher, in all of its glory 
-	void do_cipher(std::vector<std::vector<unsigned int>> vec, 
+	std::vector<std::vector<unsigned int>> do_cipher(std::vector<std::vector<unsigned int>> vec, 
 		std::vector<std::vector<unsigned int>> rnd_keys)
 	{
 		unsigned int rnds = pp.get_params().rnds;
@@ -314,9 +336,17 @@ private:
 			// Swap the left and right sides
 			// & Permutate the scrambled result with the inverse initial permutation
 			result.push_back(perm<unsigned int>(swap<unsigned int>(rounds.back()), pp.get_params().ii_perm, false));
+
+			if (debug)
+			{
+				std::cout << "--- DEBUG: End of cipher with the following ---";
+				for (unsigned int i = 0; i < result[b].size(); ++i)
+					std::cout << result[b][i];
+				std::cout << std::endl;
+			}
 		}
 
-		print<unsigned int>(result);
+		return result;
 	}
 
 	// Function to encrypt
@@ -349,7 +379,7 @@ private:
 			vec = conv.bs2bv(in, pp.get_params().s_blk);
 		}
 
-		do_cipher(vec, rnd_keys);
+		print2d<unsigned int>(do_cipher(vec, rnd_keys));
 	}
 
 	// Function to decrypt
@@ -382,7 +412,7 @@ private:
 			vec = conv.bs2bv(in, pp.get_params().s_blk);
 		}
 
-		do_cipher(vec, rnd_keys);
+		print<unsigned int>(conv.bv2iv(do_cipher(vec, rnd_keys)));
 	}
 
 public:

@@ -165,6 +165,17 @@ public:
 		return result;
 	}
 
+	// Converts from binary 2dvector to vector of ints
+	std::vector<unsigned int> bv2iv(std::vector<std::vector<unsigned int>> conv)
+	{
+		std::vector<unsigned int> result;
+
+		for (unsigned int i = 0; i < conv.size(); ++i)
+			result.push_back(b2i(conv[i]));
+
+		return result;
+	}
+
 };
 
 #endif // __H_A_H_B_CONVERTER_H__
