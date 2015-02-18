@@ -2,5 +2,5 @@ main
 debug
 *txt
 tar
-tmp
+tmp*
 objs
