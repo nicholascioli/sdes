@@ -34,6 +34,7 @@ int main(int argc, char** argv)
 	bool encrypt 	= true;
 	bool inter 		= false;
 	bool hex 		= false;
+	bool key_std	= false;
 	bool debug		= false;
 
 	for (int i = 1; i < argc; ++i)
@@ -70,6 +71,7 @@ int main(int argc, char** argv)
 			{
 				key = argv[i];
 				key = key.substr(2);
+				key_std = true;
 			}
 
 			if (argv[i][1] == 'p')
@@ -107,7 +109,7 @@ int main(int argc, char** argv)
 
 	// Initialize the key generator for the rounds
 	if (debug) std::cout << "--- DEBUG: Gathering/Generating keys ---" << std::endl;
-	keygen kg(key, pp, debug);
+	keygen kg(key, pp, key_std, debug);
 
 	if (kg.had_error())
 		return -1;

@@ -75,7 +75,7 @@ public:
 		return result;
 	}
 
-	// Converts from ascii representation of hex to a vector of binary ints
+	// Converts from ascii representation of hex to a vector of ints
 	std::vector<unsigned int> a2v(std::string conv)
 	{
 		std::vector<unsigned int> result;
@@ -97,6 +97,21 @@ public:
 
 				result.insert(result.end(), temp_v.begin(), temp_v.end());
 			}
+		}
+
+		return result;
+	}
+
+	// Convert from ascii to a 2D vector of ints
+	std::vector<std::vector<unsigned int>> a2vv(std::string conv, unsigned int block_size)
+	{
+		std::vector<std::vector<unsigned int>> result;
+		std::string temp;
+
+		for (unsigned int i = 0; i < conv.size(); i += block_size)
+		{
+			temp = conv.substr(i, block_size);
+			result.push_back(a2v(temp));
 		}
 
 		return result;

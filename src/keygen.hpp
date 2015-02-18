@@ -23,7 +23,7 @@ private:
 
 public:
 
-	keygen(std::string key_path, pparser m_pp, bool dbg=false)
+	keygen(std::string key_path, pparser m_pp, bool from_std, bool dbg=false)
 	{ 
 		// Setup defaults
 		error = false;
@@ -34,42 +34,51 @@ public:
 
 		// Open the file where the key is stored
 		// & Get the key
-		std::ifstream temp;
-		temp.open(key_path, std::ifstream::in);
-		if (temp.is_open())
+		if (!from_std)
 		{
-			l_key = pp.get_params().s_key;
-			char buffer[l_key];
-			temp.getline(buffer, l_key+1);
-			str_key = buffer;
-			temp.close();
+			std::ifstream temp;
+			temp.open(key_path, std::ifstream::in);
+			if (temp.is_open())
+			{
+				l_key = pp.get_params().s_key;
+				char buffer[l_key];
+				temp.getline(buffer, l_key+1);
+				str_key = buffer;
+				temp.close();
+			}
+			else
+			{
+				std::cerr << "ERROR: Could not open key file" << std::endl;
+				error = true;
+			}
 		}
 		else
-		{
-			std::cerr << "ERROR: Could not open key file" << std::endl;
-			error = true;
-		}
+			str_key = key_path;
 
 		// Get the master key
-		key = cnv.a2v(str_key);
-
-		if (debug) std::cout << "--- DEBUG: Got key of \'" << cnv.h2a(key) << "\'" << std::endl;
-
-		// Get the round keys
-		for (unsigned int i = 0 ; i < pp.get_params().rnds; ++i)
-			round_keys.push_back(gen_round(i));
-
-		if (debug)
+		if (!error)
 		{
-			std::cout << "--- DEBUG: Generated keys ---" << std::endl;
-			for (unsigned int i = 0; i < round_keys.size(); ++i)
-			{
-				for (unsigned int j = 0; j < round_keys[i].size(); ++j)
-					std::cout << round_keys[i][j];
-				std::cout << std::endl;
-			}
+			key = cnv.a2v(str_key);
 
-			std::cout << "--- DEBUG: End Generated Keys ---" << std::endl;
+			if (debug) std::cout << "--- DEBUG: Got key of \'" << cnv.h2a(key) << "\' (" << str_key 
+				<< ") ---" << std::endl;
+
+			// Get the round keys
+			for (unsigned int i = 0 ; i < pp.get_params().rnds; ++i)
+				round_keys.push_back(gen_round(i));
+
+			if (debug)
+			{
+				std::cout << "--- DEBUG: Generated keys ---" << std::endl;
+				for (unsigned int i = 0; i < round_keys.size(); ++i)
+				{
+					for (unsigned int j = 0; j < round_keys[i].size(); ++j)
+						std::cout << round_keys[i][j];
+					std::cout << std::endl;
+				}
+
+				std::cout << "--- DEBUG: End Generated Keys ---" << std::endl;
+			}
 		}
 	}
 
@@ -84,6 +93,14 @@ public:
 				ekey.push_back(key[pp.get_params().pc[0][i]-1]);
 
 		std::vector<unsigned int> shifted(ekey);
+
+		if (debug)
+		{
+			std::cout << "--- DEBUG: Got effective key of ";
+			for (unsigned int i = 0; i < shifted.size(); ++i)
+				std::cout << shifted[i];
+			std::cout << " ---" << std::endl; 
+		}
 
 		// Perform the shifts
 		unsigned int temp;

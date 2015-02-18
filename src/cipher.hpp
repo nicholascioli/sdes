@@ -78,13 +78,24 @@ private:
 	{
 		std::vector<T> result;
 
-		if (debug && d) std::cout << "--- DEBUG: Permutation of ";
+		if (debug && d) 
+		{
+			std::cout << "--- DEBUG: Permutation of ";
+			for (unsigned int i = 0; i < data.size(); ++i)
+				std::cout << data[i];
+			std::cout << " with ";
+			for (unsigned int i = 0; i < pm.size(); ++i)
+				std::cout << pm[i];
+			std::cout << " gives ";
+		}
+
 		for (unsigned int i = 0; i < pm.size(); ++i)
 		{
 			result.push_back(data[pm[i]-1]);
 			if (debug && d) std::cout << result[i];
 		}
-		if (debug && d) std::cout << std::endl;
+
+		if (debug && d) std::cout << " ---" << std::endl;
 
 		return result;
 	}
@@ -156,8 +167,6 @@ private:
 			}
 
 			// Get the selected rows / columns from the input (in integer format)
-			if (debug) std::cout << "--- DEBUG: Gathered the following row / column for SBox " 
-				<< i+1 << " ---" << std::endl;
 			rows.push_back(
 				conv.b2i(
 					select<unsigned int>(conv.s2v(temp, '0'), select_row)
@@ -168,6 +177,8 @@ private:
 					select<unsigned int>(conv.s2v(temp, '0'), select_col)
 				)
 			);
+			if (debug) std::cout << "--- DEBUG: Gathered the following row / column for SBox " 
+				<< i+1 << " ---" << std::endl;
 			if (debug) std::cout << rows[i] << "|" << cols[i] << std::endl;
 		}
 
@@ -209,7 +220,14 @@ private:
 	std::vector<T> mangler(unsigned int rnd, std::vector<T> right, 
 		std::vector<std::vector<unsigned int>> rnd_keys)
 	{
-		if (debug) std::cout << "--- DEBUG: Starting Mangler ---" << std::endl;
+		if (debug) std::cout << "--- DEBUG: Starting Mangler with round key of ";
+		if (debug)
+		{
+			for (unsigned int i = 0; i < rnd_keys[rnd].size(); ++i)
+				std::cout << rnd_keys[rnd][i];
+			std::cout << std::endl;
+		}
+
 		std::vector<T> result;
 		std::vector<T> box;
 		std::vector<T> permutated = perm<T>(right, pp.get_params().e_perm);
@@ -303,6 +321,9 @@ private:
 			rounds.clear();
 			init_perm.clear();
 
+			if (debug) std::cout << "--- DEBUG: Permutating initially ---" << std::endl;
+			init_perm.push_back(perm<unsigned int>(vec[b], pp.get_params().i_perm));
+
 			if (debug) 
 			{
 				std::cout << "--- DEBUG: Starting cipher on input ";
@@ -318,14 +339,11 @@ private:
 				for (unsigned int i = 0; i < vec.size(); ++i)
 				{
 					// Initial Permutation on first round
-					if (r == 0)
-					{
-						if (debug) std::cout << "--- DEBUG: Permutating initially ---" << std::endl;
-						init_perm.push_back(perm<unsigned int>(vec[b], pp.get_params().i_perm));
-					}
+					if (rounds.size() != 0)
+						init_perm.push_back(rounds.back());
 
 					// Do round
-					rounds.push_back(stage2<unsigned int>(init_perm[i], r, rnd_keys));
+					rounds.push_back(stage2<unsigned int>(init_perm[r], r, rnd_keys));
 				}
 
 				if (debug) std::cout << "--- DEBUG: End of Round " << (r + 1) << " ---\n" << std::endl;
@@ -358,9 +376,17 @@ private:
 		// Encrypt from the stdin
 		if (from_std)
 		{
-			// Convert string to binary equivalent
-			if (debug) std::cout << "--- DEBUG: Getting binary equivalent of \'" << str_input << "\' ---" << std::endl;
-			vec = conv.s2bv(str_input, pp.get_params().s_blk);
+			// Convert string to hex or binary equivalent
+			if (hex)
+			{
+				if (debug) std::cout << "--- DEBUG: Getting hex equivalent of \'" << str_input << "\' ---" << std::endl;
+				vec = conv.a2vv(str_input, pp.get_params().s_blk);
+			}
+			else
+			{
+				if (debug) std::cout << "--- DEBUG: Getting binary equivalent of \'" << str_input << "\' ---" << std::endl;
+				vec = conv.s2bv(str_input, pp.get_params().s_blk);
+			}
 		}
 		// Encrypt from a file
 		else
@@ -376,7 +402,10 @@ private:
 
 			if (debug) std::cout << "--- DEBUG: Got input of " << in << " ---" << std::endl;
 
-			vec = conv.bs2bv(in, pp.get_params().s_blk);
+			if (hex)
+				vec = conv.bs2bv(in, pp.get_params().s_blk);
+			else
+				vec = conv.bs2bv(in, pp.get_params().s_blk);
 		}
 
 		print2d<unsigned int>(do_cipher(vec, rnd_keys));
@@ -388,14 +417,14 @@ private:
 		std::vector<std::vector<unsigned int>> vec;
 		std::vector<std::vector<unsigned int>> rnd_keys = kg.get_rnd_keys_reverse();
 
-		// Encrypt from the stdin
+		// Decrypt from the stdin
 		if (from_std)
 		{
 			// Convert string to binary equivalent
 			if (debug) std::cout << "--- DEBUG: Getting binary equivalent of \'" << str_input << "\' ---" << std::endl;
 			vec = conv.bs2bv(str_input, pp.get_params().s_blk);
 		}
-		// Encrypt from a file
+		// Decrypt from a file
 		else
 		{
 			// Get the input
