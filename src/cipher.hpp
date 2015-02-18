@@ -403,7 +403,7 @@ private:
 			if (debug) std::cout << "--- DEBUG: Got input of " << in << " ---" << std::endl;
 
 			if (hex)
-				vec = conv.bs2bv(in, pp.get_params().s_blk);
+				vec = conv.a2vv(in, pp.get_params().s_blk);
 			else
 				vec = conv.bs2bv(in, pp.get_params().s_blk);
 		}
@@ -420,9 +420,17 @@ private:
 		// Decrypt from the stdin
 		if (from_std)
 		{
-			// Convert string to binary equivalent
-			if (debug) std::cout << "--- DEBUG: Getting binary equivalent of \'" << str_input << "\' ---" << std::endl;
-			vec = conv.bs2bv(str_input, pp.get_params().s_blk);
+			if (hex)
+			{
+				if (debug) std::cout << "--- DEBUG: Getting hex equivalent of \'" << str_input << "\' ---" << std::endl;
+				vec = conv.a2vv(str_input, pp.get_params().s_blk);
+			}
+			else
+			{
+				// Convert string to binary equivalent
+				if (debug) std::cout << "--- DEBUG: Getting binary equivalent of \'" << str_input << "\' ---" << std::endl;
+				vec = conv.bs2bv(str_input, pp.get_params().s_blk);
+			}
 		}
 		// Decrypt from a file
 		else
@@ -438,7 +446,10 @@ private:
 
 			if (debug) std::cout << "--- DEBUG: Got input of " << in << " ---" << std::endl;
 
-			vec = conv.bs2bv(in, pp.get_params().s_blk);
+			if (hex)
+				vec = conv.a2vv(in, pp.get_params().s_blk);
+			else
+				vec = conv.bs2bv(in, pp.get_params().s_blk);
 		}
 
 		print<unsigned int>(conv.bv2iv(do_cipher(vec, rnd_keys)));

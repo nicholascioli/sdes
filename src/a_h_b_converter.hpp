@@ -108,9 +108,9 @@ public:
 		std::vector<std::vector<unsigned int>> result;
 		std::string temp;
 
-		for (unsigned int i = 0; i < conv.size(); i += block_size)
+		for (unsigned int i = 0; i < conv.size(); i += (block_size / 4))
 		{
-			temp = conv.substr(i, block_size);
+			temp = conv.substr(i, block_size / 4);		// Assumming that each ascii character is 4 bits
 			result.push_back(a2v(temp));
 		}
 
