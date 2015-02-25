@@ -4,3 +4,4 @@ debug
 tar
 tmp*
 objs
+*sublime-*
