@@ -7,7 +7,7 @@ debug: clean
 	$(CXX) -o debug -g ./src/main.cpp
 
 main: clean
-	$(CXX) -o main ./src/main.cpp
+	$(CXX) -o sdes ./src/main.cpp
 
 clean:
 	$(RM) main debug
