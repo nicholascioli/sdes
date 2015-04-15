@@ -11,5 +11,8 @@ For an in-depth explanation of the usage and parameters, run
 <code>man doc/sdes.xsl</code>
 in the root directory.
 
-## Bugs
-As of writing this, bit zero for some reason gets translated as integer 36.
+## Features
+Out of the features listed in the man page found in <code>docs/sdes.xsl</code>, the following are implemented:
+* Parameter file configuration
+* Encryption / Decryption in binary
+* Flags <code>-i -o -e -d -k -p -D</code>
