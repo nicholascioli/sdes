@@ -8,7 +8,7 @@ After cloning the repository, simply run <code>make</code>. The executable shoul
 By default, when invoked this program will read all of the configurable options from a file in the current directory labelled 'params.txt', will read plaintext from 'ptxt', will output to file 'ctxt', and will read the key from 'key.txt'
 
 For an in-depth explanation of the usage and parameters, run
-<code>man sdes.man</code>
+<code>man doc/sdes.xsl</code>
 in the root directory.
 
 ## Bugs
