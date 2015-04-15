@@ -1,5 +1,5 @@
 CXX=g++
-FLAGS=-sd=c++11 -Iinclude
+FLAGS=-std=c++11 -Iinclude
 RM=rm -rf
 
 all: main
