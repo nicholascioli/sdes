@@ -1,13 +1,14 @@
-CXX=g++ -std=c++11
+CXX=g++
+FLAGS=-sd=c++11 -Iinclude
 RM=rm -rf
 
 all: main
 
 debug: clean
-	$(CXX) -Iinclude -o debug -g ./src/main.cpp
+	$(CXX) $(FLAGS) -o debug -g ./src/main.cpp
 
 main: clean
-	$(CXX) -Iinclude -o sdes ./src/main.cpp
+	$(CXX) $(FLAGS) -o sdes ./src/main.cpp
 
 clean:
 	$(RM) sdes debug
