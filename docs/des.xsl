@@ -1,11 +1,11 @@
 ./" Use groff -man -Tascii man.1
 ./" Use groff -man -Tascii man.1
 
-.TH mycommand 1 "FEBRUARY 2015" "CIS4362" "University of Florida"
+.TH sdes 1
 .SH NAME
-mycommand \- encrypt or decrypt input using S-DES
+sdes \- encrypt or decrypt input using S-DES
 .SH SYNOPSIS
-.B mycommand [-e] [-s] [-i
+.B sdes [-e] [-s] [-i
 <input_file>
 .B ] [-o
 <file_name>
@@ -23,40 +23,40 @@ Any line may have comments, which start with // and continue to the end of the l
 .PP 
 Any line may be left blank or only have a comment on it; however, the parameters must appear in the following order, as described. 
 .PP 
-B: Block size – a single positive integer in decimal
+B: Block size - a single positive integer in decimal
 .PP 
-Q: Key size – number of bits in key – a single positive decimal integer
+Q: Key size - number of bits in key - a single positive decimal integer
 .PP 
-QE: Effective key size – number of key bits after PC-1 – a single positive decimal integer
+QE: Effective key size - number of key bits after PC-1 - a single positive decimal integer
 .PP 
-R: Round key size – a single positive decimal integer
+R: Round key size - a single positive decimal integer
 .PP 
-N: Number of Rounds – a single positive decimal integer
+N: Number of Rounds - a single positive decimal integer
 .PP 
-PC-1: Initial Permuted Choice for Round Key Generation – QE decimal integers on one line separated by spaces, with each integer between 1 and Q
+PC-1: Initial Permuted Choice for Round Key Generation - QE decimal integers on one line separated by spaces, with each integer between 1 and Q
 .PP 
-PC-2: Permuted Choice to set bits for Round Key – R decimal integers on one line separated by spaces with each integer between 1 and QE
+PC-2: Permuted Choice to set bits for Round Key - R decimal integers on one line separated by spaces with each integer between 1 and QE
 .PP 
-RS: Left Rotation Schedule: List of N integers, indicates number of logical left shifts before each round – N decimal integers separated by spaces all on one line with each between -QE/2+1 and QE/2-1
+RS: Left Rotation Schedule: List of N integers, indicates number of logical left shifts before each round - N decimal integers separated by spaces all on one line with each between -QE/2+1 and QE/2-1
 .PP 
-IP: Initial Permutation – the B decimal integers between 1 and B (one of each) all on one line separated by spaces
+IP: Initial Permutation - the B decimal integers between 1 and B (one of each) all on one line separated by spaces
 .PP 
-E: Expansion permutation – lists where each of R bits comes from in input of length B/2 – R decimal integers, each between 1 and B/2, all on one line, separated by spaces
+E: Expansion permutation - lists where each of R bits comes from in input of length B/2 - R decimal integers, each between 1 and B/2, all on one line, separated by spaces
 .PP 
-P: P-box transposition permutation – the decimal integers between 1 and B/2 (one of each) all on one line separated by spaces
+P: P-box transposition permutation - the decimal integers between 1 and B/2 (one of each) all on one line separated by spaces
 .PP 
-T: Number of S-Boxes (each takes in R/T bits, outputs B/2T bits) – single positive decimal integer, which must evenly divide R
+T: Number of S-Boxes (each takes in R/T bits, outputs B/2T bits) - single positive decimal integer, which must evenly divide R
 .PP 
-Row: Permuted choice to select the bits from the input to an S-box that are used to select the row – R/T-B/2T distinct decimal integers between 1 and R/T, all on one line separated by spaces
+Row: Permuted choice to select the bits from the input to an S-box that are used to select the row - R/T-B/2T distinct decimal integers between 1 and R/T, all on one line separated by spaces
 .PP 
-Col: Permuted choice to select the bits from the input to an S-box that are used to select the column – B/2T distinct decimal integers betweend 1 and R/T that do not appear in Row, all on one line separated by spaces
+Col: Permuted choice to select the bits from the input to an S-box that are used to select the column - B/2T distinct decimal integers betweend 1 and R/T that do not appear in Row, all on one line separated by spaces
 .PP 
-Si: ith S-box substitution – array of 2x rows and 2y columns, where x = R/T – B/2T, and y = B/2T – one blank line is recommended but not required, followed by  2x lines, each with 2y integers between 1 and 2y 
+Si: ith S-box substitution - array of 2x rows and 2y columns, where x = R/T - B/2T, and y = B/2T - one blank line is recommended but not required, followed by  2x lines, each with 2y integers between 1 and 2y 
 .SH OPTIONS
 .IP -i<file_name>
-Read from file_name(with no space before the file name) or from stdin if “-” is used for the file name. 
+Read from file_name(with no space before the file name) or from stdin if "-" is used for the file name. 
 .IP -o<file-name>
-Specifiy a different output file, or to write output to stdout if “-” is the file name. 
+Specifiy a different output file, or to write output to stdout if "-" is the file name. 
 .IP -e
 Encrypt the input
 .IP -d
@@ -90,19 +90,19 @@ File to read cipher text from, unless overriden by command-line param -c
 .SH EXAMPLE
 Standard Ecnryption
 .RS
-mycommand -e
+sdes -e
 .RE
 Standard Decryption
 .RS
-mycommand -d 
+sdes -d 
 .RE
 Encryption with File Selections
 .RS
-mycommand -e -i<input_file> -o<output_file> -p<param_file>
+sdes -e -i<input_file> -o<output_file> -p<param_file>
 .RE
 Encryption with diagnostic output, intermediate steps, and hex input/output
 .RS
-mycommand -e -d -s -x
+sdes -e -d -s -x
 .RE
 
 .SH AUTHOR
