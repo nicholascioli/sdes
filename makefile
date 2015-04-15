@@ -4,10 +4,10 @@ RM=rm -rf
 all: main
 
 debug: clean
-	$(CXX) -o debug -g ./src/main.cpp
+	$(CXX) -Iinclude -o debug -g ./src/main.cpp
 
 main: clean
-	$(CXX) -o sdes ./src/main.cpp
+	$(CXX) -Iinclude -o sdes ./src/main.cpp
 
 clean:
 	$(RM) sdes debug
