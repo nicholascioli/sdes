@@ -10,4 +10,4 @@ main: clean
 	$(CXX) -o sdes ./src/main.cpp
 
 clean:
-	$(RM) main debug
+	$(RM) sdes debug
